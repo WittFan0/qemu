@@ -2,7 +2,7 @@
 
 function print_usage() {
     echo "usage: $0 <VM name>"
-    echo "Current VM names are: arch archbase endeavoros gaming mint mythboxtest popos work"
+    echo "Current VM names are: arch archbase autoinstall mint mythbox wm work"
 }
 
 # do not run as root
@@ -21,17 +21,15 @@ fi
 
 # declare variables
 BRIDGE="br0"
-VDISKDIR="/mnt/data0/vdisks"
-ISODIR="/mnt/data0/iso"
-VARSDIR="$HOME/ovmf_vars"
+VDISKDIR="/mnt/nvme_data/vdisks"
+ISODIR="/mnt/nvme_data/iso"
+VARSDIR="$HOME/Projects/qemu/ovmf_vars"
 WEBCAM='-device usb-host,vendorid=0x0c45,productid=0x6536'
 SMARTCARD='-device usb-host,vendorid=0x04e6,productid=0xe001'
 VIRTIOISO="-drive file=$ISODIR/virtio-win-0.1.225.iso,index=2,media=cdrom,readonly=on"
 NETBOOTISO="file=$ISODIR/netboot.xyz.iso,index=1,media=cdrom,readonly=on"
-UBUNTUSRVISO="file=$ISODIR/jammy-live-server-amd64.iso,index=1,media=cdrom,readonly=on"
 AUTOINSTALLISO="file=$ISODIR/jammy-autoinstall.iso,index=1,media=cdrom,readonly=on"
-ARCHISO="file=$ISODIR/archlinux-x86_64.iso,index=1,media=cdrom,readonly=on"
-# RESCUEISO="file=$ISODIR/rescuezilla-2.3.1-64bit.impish.iso,index=1,media=cdrom,readonly=on"
+WINISO="file=$ISODIR/Win11_22H2_English_x64.iso,index=1,media=cdrom,readonly=on"
 # NIC2="-netdev bridge,br=br1,id=hn1 -device virtio-net-pci,netdev=hn1,id=nic1,mac=02:00:00:00:00:01"
 
 case "$VM_NAME" in
@@ -39,14 +37,14 @@ case "$VM_NAME" in
         MACADDR="02:00:00:00:01:09"
         MEM="8G"
         DRV1="file=$VDISKDIR/$VM_NAME.qcow2,format=qcow2,index=0,media=disk,if=virtio,cache=none"
-        ISO1="$ARCHISO"
+        ISO1="$NETBOOTISO"
         EXTRAS="$SMARTCARD -snapshot"
     ;;
     archbase)
         MACADDR="02:00:00:00:01:09"
         MEM="8G"
         DRV1="file=$VDISKDIR/$VM_NAME.qcow2,format=qcow2,index=0,media=disk,if=virtio,cache=none"
-        ISO1="$ARCHISO"
+        ISO1="$NETBOOTISO"
         EXTRAS="-snapshot"
     ;;
     autoinstall)
@@ -56,47 +54,33 @@ case "$VM_NAME" in
         ISO1="$AUTOINSTALLISO"
         EXTRAS=""
     ;;
-    endeavoros)
-        MACADDR="02:00:00:00:01:10"
-        MEM="8G"
-        DRV1="file=$VDISKDIR/$VM_NAME.qcow2,format=qcow2,index=0,media=disk,if=virtio,cache=none"
-        ISO1="$NETBOOTISO"
-        EXTRAS=
-    ;;
     mint)
         MACADDR="02:00:00:00:01:02"
         MEM="8G"
         DRV1="file=$VDISKDIR/$VM_NAME.img,format=raw,index=0,media=disk,if=virtio,cache=none"
-        ISO1="file=$ISODIR/linuxmint.iso,index=1,media=cdrom,readonly=on"
+        ISO1="$NETBOOTISO"
         EXTRAS=""
     ;;
     mythbox)
         MACADDR="02:00:00:00:00:00"
         MEM="8G"
         DRV1="file=$VDISKDIR/$VM_NAME.qcow2,format=qcow2,index=0,media=disk,if=virtio,cache=none"
-        ISO1="$UBUNTUSRVISO"
+        ISO1="$NETBOOTISO"
         EXTRAS="-snapshot"
     ;;
-    popos)
-        MACADDR="02:00:00:00:01:01"
+    wm)
+        MACADDR="02:00:00:00:01:04"
         MEM="8G"
         DRV1="file=$VDISKDIR/$VM_NAME.qcow2,format=qcow2,index=0,media=disk,if=virtio,cache=none"
-        ISO1="file=$ISODIR/pop-os_22.04_amd64_intel_12.iso,index=1,media=cdrom,readonly=on"
+        ISO1="file=$ISODIR/wmlive-bookworm-0.96.0-0_amd64.iso,index=1,media=cdrom,readonly=on"
         EXTRAS=""
     ;;
     work)
         MACADDR="02:00:00:00:01:03"
         MEM="8G"
         DRV1="file=$VDISKDIR/$VM_NAME.img,format=raw,index=0,media=disk,if=virtio,cache=none"
-        ISO1="file=$ISODIR/Win10_1909_English_x64.iso,index=1,media=cdrom,readonly=on"
+        ISO1="$WINISO"
         EXTRAS="$SMARTCARD $WEBCAM $VIRTIOISO"
-    ;;
-    gaming)
-        MACADDR="02:00:00:00:01:03"
-        MEM="8G"
-        DRV1="file=/dev/disk/by-id/ata-PNY_CS900_240GB_SSD_PNY22202005260101CBB,format=raw,media=disk"
-        ISO1="file=$ISODIR/Win10_1909_English_x64.iso,index=1,media=cdrom,readonly=on"
-        EXTRAS="$VIRTIOISO"
     ;;
     *)
         echo "Unknown VM name specified: $VM_NAME" >&2
@@ -151,5 +135,5 @@ qemu-system-x86_64 \
     -drive "$ISO1" \
     $EXTRAS
 
-
+# # Ubuntu autoinstall boot options
 # -no-reboot -smbios type=1,serial=ds=nocloud-net;s=http://192.168.40.5:3003/
